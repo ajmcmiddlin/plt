@@ -2,6 +2,13 @@
 
 module HuttonsRazor where
 
+import           Control.Applicative     ((<|>))
+import           Data.Text               (Text)
+import           Text.Parsec             (ParseError, parse)
+import           Text.Parser.Char        (char)
+import           Text.Parser.Combinators (eof)
+import           Text.Parser.Token       (TokenParsing, integer)
+
 -- | Solution for https://www.codewars.com/kata/huttons-razor, followed by some
 -- spicy additions recommended by Dave.
 
@@ -28,3 +35,27 @@ pretty ::
 pretty = \case
   Lit n -> show n
   Add r1 r2 -> "(" <> pretty r1 <> "+" <> pretty r2 <> ")"
+
+parseText ::
+  Text
+  -> Either ParseError Razor
+parseText =
+  parse parseRazor ""
+
+parseRazor ::
+  TokenParsing m
+  => m Razor
+parseRazor =
+  parseAdd <|> parseLit <* eof
+
+parseLit ::
+  TokenParsing m
+  => m Razor
+parseLit =
+  Lit . fromInteger <$> integer
+
+parseAdd ::
+  TokenParsing m
+  => m Razor
+parseAdd =
+  Add <$> parseRazor <*> (char '+' *> parseRazor)
