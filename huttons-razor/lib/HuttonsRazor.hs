@@ -2,12 +2,11 @@
 
 module HuttonsRazor where
 
-import           Control.Applicative     ((<|>))
+import           Control.Applicative     (liftA2, (<|>))
 import           Data.Text               (Text)
 import           Text.Parsec             (ParseError, parse)
-import           Text.Parser.Char        (char)
-import           Text.Parser.Combinators (eof)
-import           Text.Parser.Token       (TokenParsing, integer)
+import           Text.Parser.Combinators (choice, eof, optional)
+import           Text.Parser.Token       (TokenParsing, integer, symbolic)
 
 -- | Solution for https://www.codewars.com/kata/huttons-razor, followed by some
 -- spicy additions recommended by Dave.
@@ -15,6 +14,7 @@ import           Text.Parser.Token       (TokenParsing, integer)
 data Razor =
   Lit Int
   | Add Razor Razor
+  deriving (Show)
 
 ex1 :: Razor
 ex1 = Add (Lit 1) (Lit 2)
@@ -43,10 +43,12 @@ parseText =
   parse parseRazor ""
 
 parseRazor ::
-  TokenParsing m
+  ( Monad m
+  , TokenParsing m
+  )
   => m Razor
 parseRazor =
-  parseAdd <|> parseLit <* eof
+  parseLit >>= liftA2 (<|>) parseAdd pure
 
 parseLit ::
   TokenParsing m
@@ -56,6 +58,7 @@ parseLit =
 
 parseAdd ::
   TokenParsing m
-  => m Razor
-parseAdd =
-  Add <$> parseRazor <*> (char '+' *> parseRazor)
+  => Razor
+  -> m Razor
+parseAdd r =
+  Add r <$> (symbolic '+' *> parseLit)
