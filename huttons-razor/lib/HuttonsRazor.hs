@@ -1,5 +1,9 @@
 {-# LANGUAGE LambdaCase #-}
--- | Solution for https://www.codewars.com/kata/huttons-razor
+
+module HuttonsRazor where
+
+-- | Solution for https://www.codewars.com/kata/huttons-razor, followed by some
+-- spicy additions recommended by Dave.
 
 data Razor =
   Lit Int
