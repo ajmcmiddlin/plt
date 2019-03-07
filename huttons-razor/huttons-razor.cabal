@@ -27,6 +27,7 @@ library
                      , text == 1.2.*
   hs-source-dirs:      lib
   default-language:    Haskell2010
+  ghc-options:         -Wall
 
 executable huttons-razor
   main-is:             Main.hs

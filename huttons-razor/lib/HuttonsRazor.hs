@@ -2,10 +2,9 @@
 
 module HuttonsRazor where
 
-import           Control.Applicative     (liftA2, (<|>))
 import           Data.Text               (Text)
 import           Text.Parsec             (ParseError, parse)
-import           Text.Parser.Combinators (choice, eof, optional)
+import           Text.Parser.Combinators (many)
 import           Text.Parser.Token       (TokenParsing, integer, symbolic)
 
 -- | Solution for https://www.codewars.com/kata/huttons-razor, followed by some
@@ -42,23 +41,26 @@ parseText ::
 parseText =
   parse parseRazor ""
 
+-- | The grammar for Hutton's Razor is:
+--
+-- V = {Addition, Razor}
+-- T = {n, +}
+-- S = {Razor}
+-- P = { Addition -> Razor + Razor
+--     , Razor -> n | Addition
+--     }
+--
+-- However, this is left recursive. To avoid this we change our production rules.
+--
+-- P' = { Razor -> n*Addition
+--      , Addition -> \+n
+--      }
 parseRazor ::
-  ( Monad m
-  , TokenParsing m
-  )
+  TokenParsing m
   => m Razor
 parseRazor =
-  parseLit >>= liftA2 (<|>) parseAdd pure
-
-parseLit ::
-  TokenParsing m
-  => m Razor
-parseLit =
-  Lit . fromInteger <$> integer
-
-parseAdd ::
-  TokenParsing m
-  => Razor
-  -> m Razor
-parseAdd r =
-  Add r <$> (symbolic '+' *> parseLit)
+  let
+    parseLit = Lit . fromInteger <$> integer
+    parseAdd = flip Add <$> (symbolic '+' *> parseRazor)
+  in
+    foldr ($) <$> parseLit <*> many parseAdd
