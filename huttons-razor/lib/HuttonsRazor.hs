@@ -1,39 +1,59 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE GADTs              #-}
+{-# LANGUAGE LambdaCase         #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 module HuttonsRazor where
 
+import           Control.Applicative     ((<|>))
 import           Data.Text               (Text)
 import           Text.Parsec             (ParseError, parse)
 import           Text.Parser.Combinators (many)
-import           Text.Parser.Token       (TokenParsing, integer, symbolic)
+import           Text.Parser.Token       (TokenParsing, integer, symbol,
+                                          symbolic)
 
 -- | Solution for https://www.codewars.com/kata/huttons-razor, followed by some
 -- spicy additions recommended by Dave.
 
-data Razor =
-  Lit Int
-  | Add Razor Razor
-  deriving (Show)
+data Razor where
+  Razor :: RazorT a -> Razor
+  -- LitI Integer
+  -- | LitB Bool
+  -- | IfThenElse Razor Razor Razor
+  -- | Add Razor Razor
+  -- deriving (Show)
 
-ex1 :: Razor
-ex1 = Add (Lit 1) (Lit 2)
+data RazorT a where
+  LitIT :: Integer -> RazorT Integer
+  LitBT :: Bool -> RazorT Bool
+  IfThenElseT :: RazorT Bool -> RazorT a -> RazorT a -> RazorT a
+  AddT :: RazorT Integer -> RazorT Integer -> RazorT Integer
 
-ex2 :: Razor
-ex2 = Add (Lit 1) (Add (Lit 2) (Add (Lit 3) (Lit 4)))
+deriving instance Show (RazorT a)
+
+ex1 :: RazorT Integer
+ex1 = AddT (LitIT 1) (LitIT 2)
+
+ex2 :: RazorT Integer
+ex2 = AddT (LitIT 1) (AddT (LitIT 2) (AddT (LitIT 3) (LitIT 4)))
 
 interpret ::
-  Razor
-  -> Int
+  RazorT a
+  -> a
 interpret = \case
-  Lit n -> n
-  Add r1 r2 -> interpret r1 + interpret r2
+  LitIT n -> n
+  LitBT b -> b
+  IfThenElseT (LitBT b) raTrue raFalse -> if b then interpret raTrue else interpret raFalse
+  AddT r1 r2 -> interpret r1 + interpret r2
 
 pretty ::
-  Razor
+  RazorT a
   -> String
 pretty = \case
-  Lit n -> show n
-  Add r1 r2 -> "(" <> pretty r1 <> "+" <> pretty r2 <> ")"
+  LitIT n -> show n
+  LitBT b -> show b
+  IfThenElseT rb ra1 ra2 -> "if " <> pretty rb <> " then " <> pretty ra1 <> " else " <> pretty ra2
+  AddT r1 r2 -> "(" <> pretty r1 <> "+" <> pretty r2 <> ")"
 
 parseText ::
   Text
@@ -59,8 +79,46 @@ parseRazor ::
   TokenParsing m
   => m Razor
 parseRazor =
+  parseLitIOrAdd <|> parseLitB <|> parseIfThenElse
+
+parseLitI ::
+  TokenParsing m
+  => m Razor
+parseLitI =
+  Razor . LitIT <$> integer
+
+parseAdd ::
+  forall m a.
+  TokenParsing m
+  => m (RazorT a -> Razor)
+parseAdd =
   let
-    parseLit = Lit . fromInteger <$> integer
-    parseAdd = flip Add <$> (symbolic '+' *> parseRazor)
+    b :: m Razor
+    b = symbolic '+' *> parseRazor
+
+    f :: Razor -> RazorT Integer -> RazorT Integer
+    f (Razor (rt :: RazorT Integer)) = flip AddT rt
   in
-    foldr ($) <$> parseLit <*> many parseAdd
+    _ $ (\case (Razor rt) -> flip AddT rt) <$> b
+
+parseLitIOrAdd ::
+  TokenParsing m
+  => m Razor
+parseLitIOrAdd =
+  foldr ($) <$> parseLitI <*> many parseAdd
+
+parseLitB ::
+  TokenParsing m
+  => m Razor
+parseLitB =
+  LitB . (== "true") <$> (symbol "true" <|> symbol "false")
+
+parseIfThenElse ::
+  TokenParsing m
+  => m Razor
+parseIfThenElse =
+  let
+    f s = symbol s *> parseRazor
+  in
+    IfThenElse <$> f "if" <*> f "then" <*> f "else"
+
