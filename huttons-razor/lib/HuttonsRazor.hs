@@ -19,6 +19,7 @@ data Razor =
   | LitB Bool
   | IfThenElse Razor Razor Razor
   | Add Razor Razor
+  | Or Razor Razor
   deriving (Eq, Show)
 
 data Type =
@@ -29,7 +30,6 @@ data Type =
 data RazorT =
   RazorT Razor Type
   deriving (Eq, Show)
-
 
 ex1 :: Razor
 ex1 = Add (LitI 1) (LitI 2)
@@ -53,7 +53,8 @@ pretty = \case
   LitI n -> show n
   LitB b -> show b
   IfThenElse rb ra1 ra2 -> "if " <> pretty rb <> " then " <> pretty ra1 <> " else " <> pretty ra2
-  Add r1 r2 -> "(" <> pretty r1 <> "+" <> pretty r2 <> ")"
+  Add r1 r2 -> "(" <> pretty r1 <> " + " <> pretty r2 <> ")"
+  Or b1 b2 -> "(" <> pretty b1 <> " || " <> pretty b2 <> ")"
 
 parseText ::
   Text
@@ -79,7 +80,7 @@ parseRazor ::
   TokenParsing m
   => m Razor
 parseRazor =
-  parseLitIOrAdd <|> parseLitB <|> parseIfThenElse
+  parseLitIOrAdd <|> parseIfThenElse <|> parseLitBOrOr
 
 parseLitI ::
   TokenParsing m
@@ -104,6 +105,18 @@ parseLitB ::
   => m Razor
 parseLitB =
   LitB . (== "true") <$> (symbol "true" <|> symbol "false")
+
+parseOr ::
+  TokenParsing m
+  => m (Razor -> Razor)
+parseOr =
+  flip Or <$> (symbol "||" *> parseRazor)
+
+parseLitBOrOr ::
+  TokenParsing m
+  => m Razor
+parseLitBOrOr =
+  foldr ($) <$> parseLitB <*> many parseOr
 
 parseIfThenElse ::
   TokenParsing m

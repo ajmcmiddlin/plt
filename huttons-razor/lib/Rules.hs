@@ -44,6 +44,24 @@ stepIfThenElseReduce rs = \case
   IfThenElse c t f -> IfThenElse <$> rs c <*> pure t <*> pure f
   _ -> Nothing
 
+stepOrL ::
+  Rule Razor Razor
+stepOrL rs = \case
+  Or l r -> Or <$> rs l <*> pure r
+  _ -> Nothing
+
+stepOrR ::
+  Rule Razor Razor
+stepOrR rs = \case
+  Or l r -> Or l <$> rs r
+  _ -> Nothing
+
+stepOrLit ::
+  Rule Razor Razor
+stepOrLit _ = \case
+  Or (LitB b1) (LitB b2) -> Just $ LitB (b1 || b2)
+  _ -> Nothing
+
 stepIfThenElseLit ::
   Rule Razor Razor
 stepIfThenElseLit _ = \case
@@ -54,7 +72,10 @@ stepIfThenElseLit _ = \case
 ruleSet ::
   RuleSet Razor Razor
 ruleSet =
-  mkRuleSet [stepAddLitI, stepAddR, stepAddL, stepIfThenElseReduce, stepIfThenElseLit]
+  mkRuleSet [ stepAddLitI , stepAddR, stepAddL
+            , stepIfThenElseLit, stepIfThenElseReduce
+            , stepOrLit, stepOrL, stepOrR
+            ]
 
 -- | Iterate on a RuleSet to reduce something (e.g. a term)
 iterR ::
