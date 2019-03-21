@@ -37,15 +37,6 @@ ex1 = Add (LitI 1) (LitI 2)
 ex2 :: Razor
 ex2 = Add (LitI 1) (Add (LitI 2) (Add (LitI 3) (LitI 4)))
 
--- interpret ::
---   Razor
---   -> String
--- interpret = \case
---   LitI n -> show n
---   LitB b -> show b
---   IfThenElse (LitB b) raTrue raFalse -> if b then interpret raTrue else interpret raFalse
---   Add r1 r2 -> interpret r1 + interpret r2
-
 pretty ::
   Razor
   -> String
