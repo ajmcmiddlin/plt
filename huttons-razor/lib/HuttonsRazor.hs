@@ -1,11 +1,12 @@
 {-# LANGUAGE GADTs               #-}
 {-# LANGUAGE LambdaCase          #-}
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module HuttonsRazor where
 
 import           Control.Applicative     ((<|>))
-import           Data.Text               (Text)
+import           Data.Text               (Text, pack)
 import           Text.Parsec             (ParseError, parse)
 import           Text.Parser.Combinators (many)
 import           Text.Parser.Token       (TokenParsing, integer, symbol,
@@ -39,10 +40,11 @@ ex2 = Add (LitI 1) (Add (LitI 2) (Add (LitI 3) (LitI 4)))
 
 pretty ::
   Razor
-  -> String
+  -> Text
 pretty = \case
-  LitI n -> show n
-  LitB b -> show b
+  LitI n -> pack $ show n
+  LitB True -> "true"
+  LitB False -> "false"
   IfThenElse rb ra1 ra2 -> "if " <> pretty rb <> " then " <> pretty ra1 <> " else " <> pretty ra2
   Add r1 r2 -> "(" <> pretty r1 <> " + " <> pretty r2 <> ")"
   Or b1 b2 -> "(" <> pretty b1 <> " || " <> pretty b2 <> ")"
