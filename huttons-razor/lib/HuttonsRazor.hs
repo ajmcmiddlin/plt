@@ -8,9 +8,10 @@ module HuttonsRazor where
 import           Control.Applicative     ((<|>))
 import           Data.Text               (Text, pack)
 import           Text.Parsec             (ParseError, parse)
-import           Text.Parser.Combinators (many)
+import           Text.Parser.Char        (char)
+import           Text.Parser.Combinators (many, skipOptional)
 import           Text.Parser.Token       (TokenParsing, integer, symbol,
-                                          symbolic)
+                                          symbolic, token)
 
 -- | Solution for https://www.codewars.com/kata/huttons-razor, followed by some
 -- spicy additions recommended by Dave.
@@ -73,7 +74,10 @@ parseRazor ::
   TokenParsing m
   => m Razor
 parseRazor =
-  parseLitIOrAdd <|> parseIfThenElse <|> parseLitBOrOr
+  let
+    s = token . skipOptional . char
+  in
+    s '(' *> (parseLitIOrAdd <|> parseIfThenElse <|> parseLitBOrOr) <* s ')'
 
 parseLitI ::
   TokenParsing m
