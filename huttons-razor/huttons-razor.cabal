@@ -17,12 +17,15 @@ extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     HuttonsRazor
+  exposed-modules:
+                       Evaluator
+                     , HuttonsRazor
                      , Rules
   -- other-modules:
   -- other-extensions:
   build-depends:
                        base >=4.11 && <4.12
+                     , mtl == 2.2.*
                      , parsec == 3.1.*
                      , parsers == 0.12.*
                      , text == 1.2.*
