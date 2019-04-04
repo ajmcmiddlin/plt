@@ -24,6 +24,22 @@ data Razor =
   | Or Razor Razor
   deriving (Eq, Show)
 
+newtype Precedence =
+  Prec Int
+  deriving (Eq, Show, Ord)
+
+precIfThenElse, precAdd, precOr :: Precedence
+
+precIfThenElse = Prec 1
+precAdd = Prec 3
+precOr = Prec 3
+
+incPrec ::
+  Precedence
+  -> Precedence
+incPrec (Prec n) =
+  Prec $ n + 1
+
 data Type =
   TyInteger
   | TyBool
@@ -42,13 +58,40 @@ ex2 = Add (LitI 1) (Add (LitI 2) (Add (LitI 3) (LitI 4)))
 pretty ::
   Razor
   -> Text
-pretty = \case
+pretty = prettyPrec (Prec 0)
+
+prettyPrec ::
+  Precedence
+  -> Razor
+  -> Text
+prettyPrec p = \case
   LitI n -> pack $ show n
   LitB True -> "true"
   LitB False -> "false"
-  IfThenElse rb ra1 ra2 -> "if " <> pretty rb <> " then " <> pretty ra1 <> " else " <> pretty ra2
-  Add r1 r2 -> "(" <> pretty r1 <> " + " <> pretty r2 <> ")"
-  Or b1 b2 -> "(" <> pretty b1 <> " || " <> pretty b2 <> ")"
+  IfThenElse rb ra1 ra2 ->
+    let
+      pIte =
+        prettyPrec precIfThenElse
+      ite =
+        "if " <> pIte rb <> " then " <> pIte ra1 <> " else " <> pIte ra2
+    in
+      prettyParen p precIfThenElse ite
+  Add r1 r2 -> prettyParen p precAdd $
+    prettyPrec (incPrec precAdd) r1 <> " + " <> prettyPrec (incPrec precAdd) r2
+  Or b1 b2 -> prettyParen p precOr $
+    prettyPrec precOr b1 <> " || " <> prettyPrec precOr b2
+
+prettyParen ::
+  Precedence
+  -> Precedence
+  -> Text
+  -> Text
+prettyParen pOuter pInner t =
+  if pOuter > pInner then
+    "(" <> t <> ")"
+  else
+    t
+
 
 parseText ::
   Text
