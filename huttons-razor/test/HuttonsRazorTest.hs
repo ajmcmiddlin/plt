@@ -1,5 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
 module HuttonsRazorTest where
 
 import           Control.Monad        (void)
