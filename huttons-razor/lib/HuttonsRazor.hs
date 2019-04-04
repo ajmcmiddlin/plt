@@ -99,20 +99,6 @@ parseText ::
 parseText =
   parse parseRazor ""
 
--- | The grammar for Hutton's Razor is:
---
--- V = {Addition, Razor}
--- T = {n, +}
--- S = {Razor}
--- P = { Addition -> Razor + Razor
---     , Razor -> n | Addition
---     }
---
--- However, this is left recursive. To avoid this we change our production rules.
---
--- P' = { Razor -> n*Addition
---      , Addition -> \+n
---      }
 parseRazor ::
   TokenParsing m
   => m Razor
@@ -166,4 +152,3 @@ parseIfThenElse =
     f s = symbol s *> parseRazor
   in
     IfThenElse <$> f "if" <*> f "then" <*> f "else"
-
