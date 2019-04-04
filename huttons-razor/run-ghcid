@@ -1,1 +1,3 @@
+#!/usr/bin/env fish
+
 ghcid -c 'ghci test/Main.hs -itest -ilib -fobject-code -odir /tmp -hidir /tmp' -T 'Main.main'
