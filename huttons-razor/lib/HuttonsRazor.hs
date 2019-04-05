@@ -1,13 +1,20 @@
-{-# LANGUAGE GADTs               #-}
-{-# LANGUAGE LambdaCase          #-}
-{-# LANGUAGE OverloadedStrings   #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE LambdaCase            #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 module HuttonsRazor where
 
 import           Control.Applicative     ((<|>))
+import           Control.Monad.Error.Lens  (throwing)
+import           Control.Lens            (Prism', makeClassyPrisms, makeWrapped)
+import           Control.Monad.Except    (MonadError)
 import           Data.Text               (Text, pack)
-import           Text.Parsec             (ParseError, parse)
+import qualified Text.Parsec             as Parsec
 import           Text.Parser.Combinators (many)
 import           Text.Parser.Token       (TokenParsing, integer, parens, symbol,
                                           symbolic)
@@ -37,15 +44,6 @@ incPrec ::
   -> Precedence
 incPrec (Prec n) =
   Prec $ n + 1
-
-data Type =
-  TyInteger
-  | TyBool
-  deriving (Eq, Show)
-
-data RazorT =
-  RazorT Razor Type
-  deriving (Eq, Show)
 
 pretty ::
   Razor
@@ -85,11 +83,18 @@ prettyParen pOuter pInner t =
   else
     t
 
+newtype ParseErrorType =
+  ParseError Parsec.ParseError
+
+makeWrapped ''ParseErrorType
+makeClassyPrisms ''ParseErrorType
+
 parseText ::
-  Text
-  -> Either ParseError Razor
+  MonadError ParseErrorType m
+  => Text
+  -> m Razor
 parseText =
-  parse parseRazor ""
+  either (throwing _ParseError) pure . Parsec.parse parseRazor ""
 
 parseRazor ::
   TokenParsing m
