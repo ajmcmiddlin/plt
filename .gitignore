@@ -1,6 +1,5 @@
 nohup.out
 huttons-razor/dist*
-.ghci
 .ghc.env*
 cabal.project.local*
 TAGS

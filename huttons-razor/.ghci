@@ -1,0 +1,4 @@
+:set -XOverloadedStrings
+:set -XFlexibleContexts
+:set -ilib
+:set -itest
