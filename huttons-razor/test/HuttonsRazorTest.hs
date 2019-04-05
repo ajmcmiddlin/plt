@@ -1,17 +1,19 @@
 module HuttonsRazorTest where
 
-import           Control.Monad        (void)
+import           Control.Monad       (void)
+import           Data.Text           (Text)
 
-import           Hedgehog             (MonadGen, failure, forAll, property,
-                                       tripping)
-import qualified Hedgehog.Gen         as Gen
-import qualified Hedgehog.Range       as Range
-import           Test.Tasty           (TestTree, testGroup)
-import           Test.Tasty.Hedgehog  (testProperty)
+import           Hedgehog            (MonadGen, failure, forAll, property,
+                                      tripping)
+import qualified Hedgehog.Gen        as Gen
+import qualified Hedgehog.Range      as Range
+import           Test.Tasty          (TestTree, testGroup)
+import           Test.Tasty.Hedgehog (testProperty)
 
-import           Evaluator            (eval)
-import           HuttonsRazor         (Razor (Add, IfThenElse, LitB, LitI, Or),
-                                       parseText, pretty)
+import           Evaluator           (eval)
+import           HuttonsRazor        (ParseErrorType,
+                                      Razor (Add, IfThenElse, LitB, LitI, Or),
+                                      parseText, pretty)
 
 testHuttonsRazor :: TestTree
 testHuttonsRazor = testGroup "HuttonsRazor"
@@ -23,7 +25,7 @@ testHuttonsRazor = testGroup "HuttonsRazor"
 testPrintParse :: TestTree
 testPrintParse = testProperty "parse . pretty" . property $ do
   r <- forAll genRazor
-  tripping r pretty parseText
+  tripping r pretty (parseText :: Text -> Either ParseErrorType Razor)
 
 testEval :: TestTree
 testEval = testProperty "Every generated expression evalutes" . property $ do

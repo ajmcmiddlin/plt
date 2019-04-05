@@ -85,6 +85,7 @@ prettyParen pOuter pInner t =
 
 newtype ParseErrorType =
   ParseError Parsec.ParseError
+  deriving (Eq, Show)
 
 makeWrapped ''ParseErrorType
 makeClassyPrisms ''ParseErrorType

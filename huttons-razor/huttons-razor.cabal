@@ -20,7 +20,7 @@ library
   exposed-modules:
                        Evaluator
                      , HuttonsRazor
-                     , Rules
+                     , Types
   -- other-modules:
   -- other-extensions:
   build-depends:
