@@ -105,10 +105,8 @@ parseRazor =
   let
     baseParser =
       foldr1 (<|>) [parseLitI, parseLitB, parseIfThenElse]
-    parseOps =
-      foldr ($) <$> baseParser <*> many (parseAdd <|> parseOr)
   in
-    foldr ($) <$> (parens parseRazor <|> parseOps) <*> many (parseAdd <|> parseOr)
+    foldr ($) <$> (parens parseRazor <|> baseParser) <*> many (parseAdd <|> parseOr)
 
 parseLitI ::
   TokenParsing m
