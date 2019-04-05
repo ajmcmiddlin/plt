@@ -1,5 +1,5 @@
-{ mkDerivation, base, hedgehog, parsec, parsers, stdenv, tasty
-, tasty-hedgehog, text
+{ mkDerivation, base, hedgehog, lens, mtl, parsec, parsers, stdenv
+, tasty, tasty-hedgehog, text
 }:
 mkDerivation {
   pname = "huttons-razor";
@@ -7,7 +7,7 @@ mkDerivation {
   src = ./.;
   isLibrary = true;
   isExecutable = true;
-  libraryHaskellDepends = [ base parsec parsers text ];
+  libraryHaskellDepends = [ base lens mtl parsec parsers text ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [ base hedgehog tasty tasty-hedgehog ];
   homepage = "https://github.com/ajmcmiddlin/huttons-razor";
