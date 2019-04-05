@@ -55,25 +55,22 @@ step = \case
   IfThenElse (LitI _) _ _ -> badFirstType "if/then/else" TyInteger TyBool
   IfThenElse b rt rf -> IfThenElse <$> step b <*> pure rt <*> pure rf
 
-badFirstType ::
+badFirstType, badSecondType ::
   MonadError EvalError m
   => Text
   -> Type
   -> Type
   -> m a
+
 badFirstType op tyActual tyExpected =
   throwError . TypeError $
-    "First argument to `" <> op <> "` has type " <> ts tyActual <> ". Expected " <> ts tyExpected <> "."
+    "First argument to `" <> op <> "` has type " <> ts tyActual <> ". Expected "
+    <> ts tyExpected <> "."
 
-badSecondType ::
-  MonadError EvalError m
-  => Text
-  -> Type
-  -> Type
-  -> m a
 badSecondType op tyActual tyExpected =
   throwError . TypeError $
-    "Second argument to `" <> op <> "` has type " <> ts tyActual <> ". Expected " <> ts tyExpected <> "."
+    "Second argument to `" <> op <> "` has type " <> ts tyActual <> ". Expected "
+    <> ts tyExpected <> "."
 
 ts ::
   Show a

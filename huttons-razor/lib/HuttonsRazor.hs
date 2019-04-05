@@ -28,7 +28,6 @@ newtype Precedence =
   deriving (Eq, Show, Ord)
 
 precIfThenElse, precAdd, precOr :: Precedence
-
 precIfThenElse = Prec 1
 precAdd = Prec 3
 precOr = Prec 3
@@ -51,7 +50,8 @@ data RazorT =
 pretty ::
   Razor
   -> Text
-pretty = prettyPrec (Prec 0)
+pretty =
+  prettyPrec (Prec 0)
 
 prettyPrec ::
   Precedence
@@ -117,7 +117,7 @@ parseLitB ::
   TokenParsing m
   => m Razor
 parseLitB =
-  LitB . (== "true") <$> (symbol "true" <|> symbol "false")
+  LitB  <$> (True <$ symbol "true" <|> False <$ symbol "false")
 
 parseOr ::
   TokenParsing m
