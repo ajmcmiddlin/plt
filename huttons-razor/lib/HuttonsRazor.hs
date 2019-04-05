@@ -11,7 +11,7 @@ import           Text.Parsec             (ParseError, parse)
 import           Text.Parser.Char        (char)
 import           Text.Parser.Combinators (many, skipOptional)
 import           Text.Parser.Token       (TokenParsing, integer, symbol,
-                                          symbolic, token)
+                                          symbolic, token, parens)
 
 -- | Solution for https://www.codewars.com/kata/huttons-razor, followed by some
 -- spicy additions recommended by Dave.
@@ -79,7 +79,7 @@ prettyPrec p = \case
   Add r1 r2 -> prettyParen p precAdd $
     prettyPrec (incPrec precAdd) r1 <> " + " <> prettyPrec (incPrec precAdd) r2
   Or b1 b2 -> prettyParen p precOr $
-    prettyPrec precOr b1 <> " || " <> prettyPrec precOr b2
+    prettyPrec (incPrec precOr) b1 <> " || " <> prettyPrec (incPrec precOr) b2
 
 prettyParen ::
   Precedence
@@ -92,7 +92,6 @@ prettyParen pOuter pInner t =
   else
     t
 
-
 parseText ::
   Text
   -> Either ParseError Razor
@@ -104,9 +103,12 @@ parseRazor ::
   => m Razor
 parseRazor =
   let
-    s = token . skipOptional . char
+    baseParser =
+      foldr1 (<|>) [parseLitI, parseLitB, parseIfThenElse]
+    parseOps =
+      foldr ($) <$> baseParser <*> many (parseAdd <|> parseOr)
   in
-    s '(' *> (parseLitIOrAdd <|> parseIfThenElse <|> parseLitBOrOr) <* s ')'
+    foldr ($) <$> (parens parseRazor <|> parseOps) <*> many (parseAdd <|> parseOr)
 
 parseLitI ::
   TokenParsing m
