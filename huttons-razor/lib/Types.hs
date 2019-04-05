@@ -19,6 +19,7 @@ data Type =
 
 data TypeError =
   MismatchedTypes Text Type Type
+  deriving (Eq, Show)
 
 makeClassyPrisms ''TypeError
 
