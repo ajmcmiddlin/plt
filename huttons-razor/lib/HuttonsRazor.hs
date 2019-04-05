@@ -48,12 +48,6 @@ data RazorT =
   RazorT Razor Type
   deriving (Eq, Show)
 
-ex1 :: Razor
-ex1 = Add (LitI 1) (LitI 2)
-
-ex2 :: Razor
-ex2 = Add (LitI 1) (Add (LitI 2) (Add (LitI 3) (LitI 4)))
-
 pretty ::
   Razor
   -> Text
@@ -119,12 +113,6 @@ parseAdd ::
 parseAdd =
   flip Add <$> (symbolic '+' *> parseRazor)
 
-parseLitIOrAdd ::
-  TokenParsing m
-  => m Razor
-parseLitIOrAdd =
-  foldr ($) <$> parseLitI <*> many parseAdd
-
 parseLitB ::
   TokenParsing m
   => m Razor
@@ -136,12 +124,6 @@ parseOr ::
   => m (Razor -> Razor)
 parseOr =
   flip Or <$> (symbol "||" *> parseRazor)
-
-parseLitBOrOr ::
-  TokenParsing m
-  => m Razor
-parseLitBOrOr =
-  foldr ($) <$> parseLitB <*> many parseOr
 
 parseIfThenElse ::
   TokenParsing m
