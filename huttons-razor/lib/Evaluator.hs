@@ -1,21 +1,26 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Evaluator where
 
+import           Control.Lens         (makeClassyPrisms)
 import           Control.Monad.Except (MonadError (catchError, throwError))
 import           Data.Bool            (bool)
 import           Data.Text            (Text, pack)
 import           Text.Parsec          (ParseError)
 
 import           HuttonsRazor
+import           Types                (Type (TyBool, TyInteger))
 
 data EvalError =
   TypeError Text
   | NormalForm
   | EvalParseError ParseError
   deriving (Show, Eq)
+
+makeClassyPrisms ''EvalError
 
 eval ::
   (MonadError EvalError m
