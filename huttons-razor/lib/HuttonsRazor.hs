@@ -8,10 +8,9 @@ module HuttonsRazor where
 import           Control.Applicative     ((<|>))
 import           Data.Text               (Text, pack)
 import           Text.Parsec             (ParseError, parse)
-import           Text.Parser.Char        (char)
-import           Text.Parser.Combinators (many, skipOptional)
-import           Text.Parser.Token       (TokenParsing, integer, symbol,
-                                          symbolic, token, parens)
+import           Text.Parser.Combinators (many)
+import           Text.Parser.Token       (TokenParsing, integer, parens, symbol,
+                                          symbolic)
 
 -- | Solution for https://www.codewars.com/kata/huttons-razor, followed by some
 -- spicy additions recommended by Dave.
