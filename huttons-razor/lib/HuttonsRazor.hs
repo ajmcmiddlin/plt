@@ -91,7 +91,9 @@ makeWrapped ''ParseErrorType
 makeClassyPrisms ''ParseErrorType
 
 parseText ::
-  MonadError ParseErrorType m
+  ( MonadError e m
+  , AsParseErrorType e
+  )
   => Text
   -> m Razor
 parseText =
