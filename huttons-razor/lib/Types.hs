@@ -4,7 +4,7 @@
 
 module Types where
 
-import           Control.Lens             (makeClassyPrisms)
+import           Control.Lens             (Prism', prism)
 import           Control.Monad.Error.Lens (throwing)
 import           Control.Monad.Except     (MonadError)
 import           Data.Bool                (bool)
@@ -21,7 +21,22 @@ data TypeError =
   MismatchedTypes Text Type Type
   deriving (Eq, Show)
 
-makeClassyPrisms ''TypeError
+class AsTypeError r_auEC where
+      _TypeError :: Prism' r_auEC TypeError
+
+      _MismatchedTypes :: Prism' r_auEC (Text, Type, Type)
+      _MismatchedTypes = _TypeError . _MismatchedTypes
+
+instance AsTypeError TypeError where
+  _TypeError = id
+  _MismatchedTypes =
+    prism
+      (\(x1_auED, x2_auEE, x3_auEF) ->
+        MismatchedTypes x1_auED x2_auEE x3_auEF)
+      (\case
+        MismatchedTypes y1_auEH y2_auEI y3_auEJ ->
+          Right (y1_auEH, y2_auEI, y3_auEJ)
+      )
 
 infer ::
   ( AsTypeError e

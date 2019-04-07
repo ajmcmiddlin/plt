@@ -18,7 +18,8 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:
-                       Evaluator
+                       Error
+                     , Evaluator
                      , HuttonsRazor
                      , Types
   -- other-modules:

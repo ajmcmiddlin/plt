@@ -4,20 +4,21 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 
 module HuttonsRazor where
 
-import           Control.Applicative     ((<|>))
-import           Control.Monad.Error.Lens  (throwing)
-import           Control.Lens            (Prism', makeClassyPrisms, makeWrapped)
-import           Control.Monad.Except    (MonadError)
-import           Data.Text               (Text, pack)
-import qualified Text.Parsec             as Parsec
-import           Text.Parser.Combinators (many)
-import           Text.Parser.Token       (TokenParsing, integer, parens, symbol,
-                                          symbolic)
+import           Control.Applicative      ((<|>))
+import           Control.Lens             (Prism', Rewrapped,
+                                           Wrapped (Unwrapped), iso, prism,
+                                           _Wrapped')
+import           Control.Monad.Error.Lens (throwing)
+import           Control.Monad.Except     (MonadError)
+import           Data.Text                (Text, pack)
+import qualified Text.Parsec              as Parsec
+import           Text.Parser.Combinators  (many)
+import           Text.Parser.Token        (TokenParsing, integer, parens,
+                                           symbol, symbolic)
 
 -- | Solution for https://www.codewars.com/kata/huttons-razor, followed by some
 -- spicy additions recommended by Dave.
@@ -87,8 +88,21 @@ newtype ParseErrorType =
   ParseError Parsec.ParseError
   deriving (Eq, Show)
 
-makeWrapped ''ParseErrorType
-makeClassyPrisms ''ParseErrorType
+instance ParseErrorType ~ t_atop => Rewrapped ParseErrorType t_atop
+instance Wrapped ParseErrorType where
+  type Unwrapped ParseErrorType = Parsec.ParseError
+  _Wrapped' =
+    iso (\(ParseError x_atoo) -> x_atoo) ParseError
+
+class AsParseErrorType r_atpc where
+  _ParseErrorType :: Prism' r_atpc ParseErrorType
+  _ParseError :: Prism' r_atpc Parsec.ParseError
+  _ParseError = _ParseErrorType . _ParseError
+
+instance AsParseErrorType ParseErrorType where
+  _ParseErrorType = id
+  _ParseError =
+    prism ParseError (\case ParseError y1_atpf -> Right y1_atpf)
 
 parseText ::
   ( MonadError e m
