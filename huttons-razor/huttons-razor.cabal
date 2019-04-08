@@ -53,6 +53,7 @@ test-suite tasty
                      , huttons-razor
                      , tasty == 1.1.*
                      , tasty-hedgehog == 0.2.*
+                     , text == 1.2.*
   other-modules:       HuttonsRazorTest
   hs-source-dirs:      test
   default-language:    Haskell2010
