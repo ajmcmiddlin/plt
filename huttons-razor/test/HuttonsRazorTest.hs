@@ -10,6 +10,7 @@ import qualified Hedgehog.Range      as Range
 import           Test.Tasty          (TestTree, testGroup)
 import           Test.Tasty.Hedgehog (testProperty)
 
+import           Error               (Error)
 import           Evaluator           (eval)
 import           HuttonsRazor        (ParseErrorType,
                                       Razor (Add, IfThenElse, LitB, LitI, Or),
@@ -18,14 +19,17 @@ import           HuttonsRazor        (ParseErrorType,
 testHuttonsRazor :: TestTree
 testHuttonsRazor = testGroup "HuttonsRazor"
   [
-    testPrintParse
+    testPrintParsePrint
   , testEval
   ]
 
-testPrintParse :: TestTree
-testPrintParse = testProperty "parse . pretty" . property $ do
+testPrintParsePrint :: TestTree
+testPrintParsePrint = testProperty "parse . pretty" . property $ do
+  let
+    parse :: Text -> Either Error Razor
+    parse = parseText
   r <- forAll genRazor
-  tripping r pretty (parseText :: Text -> Either ParseErrorType Razor)
+  tripping (pretty r) parse (>>= pure . pretty)
 
 testEval :: TestTree
 testEval = testProperty "Every generated expression evalutes" . property $ do
